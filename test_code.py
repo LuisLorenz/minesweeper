@@ -96,5 +96,44 @@ for row in range(rows):
 formated_board_list(init_board)
 
 
+# game logic
+# input user
+    # row / col 
+# check function
+move = (row, col)
+
+# valid move
+def valid_move(user_board, move):
+    row, col = move 
+
+    # boarder check
+    min_row = 0 
+    max_row = 9
+    min_col = 0
+    max_col = 9
+    if min_row <= row <= max_row and min_col <= col <= max_col: 
+        return False
+
+    # new move check
+    if user_board[row][col] != ' ': 
+        return False
+
+    return True
+
+def check_move(init_board, move):
+    row, col = move 
+    if init_board[row][col] == '*':
+        return True 
+    return False
+
+# user board list
+# update this with each move
+
+# 0 check algo
+# loop in a loop 
+# super loop: iterates over the spots surrounding the user_move
+    # sub loop: creating an interation each time a new 0-spot was discovered etc.
+# add 0-spot to zero_checked_board when the 8 surrounding spot were checked
+# no iterations on 0-spots that are in the zero_checked_board
 
 

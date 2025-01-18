@@ -6,12 +6,10 @@ cols = 10
 init_board = [[' ' for x in range(rows)] for y in range(cols)]
 # user_board
 user_board = copy.deepcopy(init_board)
-# copy.deepcopy: 
-#   This creates a completely independent copy of init_board. 
-#   Any changes to init_board will no longer affect user_board.
-# Without a deep copy, 
-#   both user_board and init_board point to the same memory, 
-#   meaning changes to one will change the other.
+
+def reset_board(board): # try out if this works
+    board.clear()
+    return board
 
 # formated board
 def formated_board_list(board): 
@@ -20,24 +18,24 @@ def formated_board_list(board):
         print(formated_board_string)
     print('')
 
-# empty spots list 
+# Generate list of empty spots
+def reset_empty_spots_list():
+    return [(row, col) for row in range(rows) for col in range(cols) if init_board[row][col] == ' ']
 
-empty_spots = [] 
-def reset_empty_spots_list(empty_spots): 
-    empty_spots.clear() 
-    for row in range(rows): 
-            for col in range (cols): 
-                if init_board[row][col] == ' ':
-                    empty_spots.append((row, col)) 
+# Plant bombs on the board
+def plant_bombs():
+    empty_spots = reset_empty_spots_list()
+    num_bombs = 10
+    
+    # if num_bombs > len(empty_spots):
+    #     raise ValueError("Not enough empty spots to place all bombs!")
 
-reset_empty_spots_list(empty_spots)
+    for _ in range(num_bombs):
+        row, col = random.choice(empty_spots)
+        init_board[row][col] = '*'
+        empty_spots.remove((row, col))
 
-# planting bombs
-num_bombs = 10 
-for _ in range(num_bombs):
-    row, col = random.choice(empty_spots) 
-    init_board[row][col] = '*'
-    empty_spots.remove((row, col))
+    return empty_spots
 
 def check_neighbor_bombs(init_board, row, col):
     base = 0 
@@ -46,7 +44,6 @@ def check_neighbor_bombs(init_board, row, col):
     min_col = 0
     max_col = 9
     
-
     # verticial check
     # top mid
     if min_row <= (row - 1) <= max_row: 
@@ -92,14 +89,13 @@ def check_neighbor_bombs(init_board, row, col):
 
     return str(base) # the values in the grid are all strings
 
-
-# nested loop 
-for row in range(rows):
-     for col in range(cols): 
-          if init_board[row][col] != '*':
-            value = check_neighbor_bombs(init_board, row, col)
-            init_board[row][col] = value
-
+def assign_board(): 
+    # nested loop 
+    for row in range(rows):
+        for col in range(cols): 
+            if init_board[row][col] != '*':
+                value = check_neighbor_bombs(init_board, row, col)
+                init_board[row][col] = value
 
 # valid_move
 def valid_move(user_board, move):
@@ -138,75 +134,56 @@ def check_bomb(init_board, move):
 def eight_spot_check(init_board, user_board, move): 
     row, col = move 
 
-    min_row = 0 
-    max_row = 9
-    min_col = 0
-    max_col = 9
+    # defining the boarders
+    # min_row = 0 
+    # max_row = 9
+    # min_col = 0
+    # max_col = 9
 
-    # top mid
-    if min_row <= (row - 1) <= max_row: 
-        if user_board[row - 1][col] == ' ':  
-            if init_board[row - 1][col] == '0':
-                user_board[row - 1][col] = init_board[row - 1][col]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
-        
-    # top left
-    if min_row <= (row - 1) <= max_row and min_col <= (col - 1) <= max_col: 
-        if user_board[row - 1][col] == ' ':     
-            if init_board[row - 1][col - 1] == '0':
-                user_board[row - 1][col - 1] = init_board[row - 1][col - 1]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
-    
-    # mid left
-    if min_col <= (col - 1) <= max_col:
-        if user_board[row - 1][col] == ' ': 
-            if init_board[row][col - 1] == '0':
-                user_board[col - 1] = init_board[col - 1]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
-    
-    # bottom left
-    if min_row <= (row + 1) <= max_row and min_col <= (col - 1) <= max_col: 
-        if user_board[row - 1][col] == ' ': 
-            if init_board[row + 1][col - 1] == '0':
-                user_board[row + 1][col - 1] = init_board[row + 1][col - 1]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
-    
-    # bottom mid
-    if min_row <= (row + 1) <= max_row:
-        if user_board[row - 1][col] == ' ': 
-            if init_board[row + 1][col] == '0':
-                user_board[row + 1][col] = init_board[row + 1][col]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
-    
-    # bottom right
-    if min_row <= (row + 1) <= max_row and min_col <= (col + 1) <= max_col: 
-        if user_board[row - 1][col] == ' ': 
-            if init_board[row + 1][col + 1] == '0':
-                user_board[row + 1][col + 1] = init_board[row + 1][col + 1]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
-    
-    # mid right
-    if min_col <= (col + 1) <= max_col: 
-        if user_board[row - 1][col] == ' ': 
-            if init_board[row][col + 1] == '0':
-                user_board[row][col + 1] = init_board[row][col + 1]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
-    
-    # top right 
-    if min_row <= (row - 1) <= max_row and min_col <= (col + 1) <= max_col:
-        if user_board[row - 1][col] == ' ': 
-            if init_board[row - 1][col + 1] == '0':
-                user_board[row - 1][col + 1] = init_board[row - 1][col + 1]
-                sub_move = (row - 1, col)
-                eight_spot_check(init_board, user_board, sub_move)
+    min_row, max_row = 0, len(init_board) - 1
+    min_col, max_col = 0, len(init_board[0]) - 1
 
+     # List all eight possible directions
+    directions = [
+        (-1, 0),  # top
+        (-1, -1), # top-left
+        (0, -1),  # left
+        (1, -1),  # bottom-left
+        (1, 0),   # bottom
+        (1, 1),   # bottom-right
+        (0, 1),   # right                                                   
+        (-1, 1)   # top-right
+    ]
+
+    # Use a queue for BFS
+    queue = [move]
+    visited = set(queue) # 
+
+    while queue:
+        current_row, current_col = queue.pop(0) #
+            # so the first move at index '0' is removed
+            # avoiding a repetition this way
+        user_board[current_row][current_col] = init_board[current_row][current_col]
+
+        # If the current cell is '0', explore its neighbors
+        if init_board[current_row][current_col] == '0':
+            for dr, dc in directions: # direction row, direction col
+                # each tuple is used 
+                new_row, new_col = current_row + dr, current_col + dc
+
+                # Check boundaries
+                if min_row <= new_row <= max_row and min_col <= new_col <= max_col:
+                    if (new_row, new_col) not in visited and user_board[new_row][new_col] == ' ':
+                        user_board[new_row][new_col] = init_board[new_row][new_col] # it is impossible to reveal a '*' with this 
+                        visited.add((new_row, new_col)) # so the coordinates are saved, tracking queue 
+
+                        # Add to queue if the new cell is also a '0'
+                        if init_board[new_row][new_col] == '0':
+                            queue.append((new_row, new_col))
+
+        # for the move all the surrounding spots are checked
+        #   therefore all the numbers are added
+        #   if the number is 0 the coordinates run the queue like move 
 
 def is_win(init_board, user_board):
     # all none bomb spots are revealed 
@@ -220,13 +197,17 @@ def is_win(init_board, user_board):
                     return False
     return True
             
-
 def intro():
     print('Welcome to MINESWEEPER.')
 
 # game logic: win/loss
 def game(init_board, user_board):
     while True: 
+        
+
+        plant_bombs()
+        assign_board()
+
         # show current board
         formated_board_list(user_board)
 
@@ -270,7 +251,6 @@ intro()
 # game loop 
 # game starts
 while True:
-    reset_empty_spots_list(empty_spots)
     game(init_board, user_board)
     while True:
         play_again = input('Do you want play again? (y/n)')

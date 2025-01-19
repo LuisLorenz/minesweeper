@@ -1,13 +1,46 @@
 import random
 import copy
 
-def reset_boards(): 
-    global rows, cols, init_board, user_board
-    
-    rows = 10
-    cols = 10
+# # formated board
+# def formated_board_list(board): 
+#     for x in board:
+#         formated_board_string = '| ' + ' | '.join(x) + ' |'
+#         print(formated_board_string)
+#     print('')
 
+
+
+rows = 10
+cols = 10
+
+def formated_board_list(board): 
+    visual_board = copy.deepcopy(board) # avoid reference
+
+    # Light grey color for row numbers
+    light_grey = '\033[90m'  # ANSI escape code for light grey
+    green = '\033[92m'
+    red = '\033[91m'
+    reset_color = '\033[0m'  # Reset color to default
+
+    for i in range(rows):
+        visual_board[i].insert(0, red + str(i) + reset_color)  # Add row number
+    
+
+    # Add column numbers as the header row
+    header_row = [' '] + [green + str(i) + reset_color for i in range(cols)]
+    visual_board.insert(0, header_row)
+   
+    for x in visual_board:
+        formated_board_string = ' | '.join(x) + ' |'
+        print(formated_board_string)
+    print('')
+    visual_board.clear()
+
+def reset_boards(): 
+    global init_board, user_board
+    
     init_board = [[' ' for x in range(rows)] for y in range(cols)]
+    
     # user_board
     user_board = copy.deepcopy(init_board)
 
@@ -17,42 +50,21 @@ def reset_board(board): # try out if this works
     board.clear()
     return board
 
-# formated board
-def formated_board_list(board): 
-    for x in board:
-        formated_board_string = '| ' + ' | '.join(x) + ' |'
-        print(formated_board_string)
-    print('')
-
 # Generate list of empty spots
+empty_spots = []
 def reset_empty_spots_list():
-    return [(row, col) for row in range(rows) for col in range(cols) if init_board[row][col] == ' ']
-
-# Plant bombs on the board
-# def plant_bombs():
-#     empty_spots = reset_empty_spots_list()
-#     num_bombs = 10
-    
-#     # if num_bombs > len(empty_spots):
-#     #     raise ValueError("Not enough empty spots to place all bombs!")
-
-#     for _ in range(num_bombs):
-#         row, col = random.choice(empty_spots)
-#         init_board[row][col] = '*'
-#         empty_spots.remove((row, col))
+    # global empty_spots
+    empty_spots = [(row, col) for row in range(rows) for col in range(cols) if init_board[row][col] == ' ']
+    # return empty_spots  can also be implemented 
+    return empty_spots
 
 def plant_bombs():
-    # Reset the board to its initial state (if needed)
-    # global init_board
-    # init_board = [[' ' for x in range(rows)] for y in range(cols)]
-    
     empty_spots = reset_empty_spots_list()
     num_bombs = 10
 
     if num_bombs > len(empty_spots):
         raise ValueError("Not enough empty spots to place all bombs!")
 
-    print(f"Empty spots before placing bombs: {empty_spots}")
     for _ in range(num_bombs):
         row, col = random.choice(empty_spots)
         init_board[row][col] = '*'
@@ -156,11 +168,6 @@ def eight_spot_check(init_board, user_board, move):
     row, col = move 
 
     # defining the boarders
-    # min_row = 0 
-    # max_row = 9
-    # min_col = 0
-    # max_col = 9
-
     min_row, max_row = 0, len(init_board) - 1
     min_col, max_col = 0, len(init_board[0]) - 1
 
@@ -202,15 +209,7 @@ def eight_spot_check(init_board, user_board, move):
                         if init_board[new_row][new_col] == '0':
                             queue.append((new_row, new_col))
 
-        # for the move all the surrounding spots are checked
-        #   therefore all the numbers are added
-        #   if the number is 0 the coordinates run the queue like move 
-
 def is_win(init_board, user_board):
-    # all none bomb spots are revealed 
-    # it is about the user_board
-    # opt 1: interate through the whole board and see if there are still spots that are ' ' and are not '*' in compariation with the init_board
-    # if False: win 
     for r in range(rows):
         for c in range(cols): 
             if user_board[r][c] == ' ':
@@ -228,24 +227,25 @@ def game(init_board, user_board):
     assign_board()
 
     while True: 
-        
-
-        
-
         # show current board
         formated_board_list(user_board)
 
         # get user move
         while True: 
-            print('Where do you want to dig?')
-            move_row = input('Row = ')
-            move_col = input('Col = ')
-            move = (move_row, move_col)
-            if valid_move(user_board, move) == True:
-                row = int(move_row) 
-                col = int(move_col)
-                move =(row, col)
+            user_input = input('Where do you want to dig? (row, col) ')
+            try: 
+                row, col = map(int, user_input.split(',')) 
+                move = (row, col)
+                if valid_move(user_board, move) == True:
+                    row, col = move
+                    row = int(row) 
+                    col = int(col)
+                    move =(row, col)
+                    break
+            except:
+                print('Invalid input. Please try again.')
                 break
+            
         
         # check move
         if check_bomb(init_board, move) == True: 
@@ -264,12 +264,6 @@ def game(init_board, user_board):
             print('You revealed spotted all the bombs. Congrates.')
             formated_board_list(init_board)
             break
-
-# # check move
-# if check_move(move) == True:
-#     print('You hit a bomb.')
-#     formated_board_list(init_board)
-#     break 
 
 intro()
 # game loop 

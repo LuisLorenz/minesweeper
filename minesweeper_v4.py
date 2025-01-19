@@ -158,6 +158,33 @@ def valid_move(user_board, move):
 
     return True
 
+def valid_move_marker(user_board, move):
+    row, col = move 
+
+    try: 
+        row = int(row) 
+        col = int(col)
+    except ValueError: 
+        print('Your input was invalid. Please insert numbers between 0 to 9.')
+
+    # boarder check
+    min_row = 0 
+    max_row = 9
+    min_col = 0
+    max_col = 9
+    if min_row <= row <= max_row and min_col <= col <= max_col: 
+        pass
+    else:
+        print('This field is not in the play board. Please try again.')
+        return False
+
+    # new move check
+    if user_board[row][col] != '#': 
+        print('This field has no marker. Please try a different spot.')
+        return False
+
+    return True
+
 def check_bomb(init_board, move):
     row, col = move 
     if init_board[row][col] == '*':
@@ -216,7 +243,70 @@ def is_win(init_board, user_board):
                 if init_board[r][c] != '*':
                     return False
     return True
+
+def marking_bombs():
+    while True: 
+        while True:
+            formated_board_list(user_board)
+            user_move = input("""What do you want to do? 
+- set a marker (s)
+- remove a marker (r)
+- exit (e)
+>> """)
+            try: 
+                if user_move == 's' or user_move == 'r' or user_move == 'e':
+                    break
+                else:
+                    print('Invalid input.')
+            except:
+                print('Invalid input.')
+        if user_move == 'e':
+            break
+        if user_move == 's':
+            while True: 
+                user_input = input('Where do you want to set a marker? (row, col) ')
+                try: 
+                    row, col = map(int, user_input.split(',')) 
+                    move = (row, col)
+                    if valid_move(user_board, move) == True:
+                        row, col = move
+                        row = int(row) 
+                        col = int(col)
+                        move =(row, col)
+                        user_board[row][col] = '#'
+                        break
+                except:
+                    print('Invalid input. Please try again.')
+        if user_move == 'r':
+            # check for markers in the board first 
+            is_marker = False
+            for row in range(rows):
+                for col in range(cols):
+                    if user_board[row][col] == '#':
+                        while True: 
+                            user_input = input('Where do you want to remove a marker? (row, col) ')
+                            try: 
+                                row, col = map(int, user_input.split(',')) 
+                                move = (row, col)
+                                if valid_move_marker(user_board, move) == True:
+                                    row, col = move
+                                    row = int(row) 
+                                    col = int(col)
+                                    move =(row, col)
+                                    user_board[row][col] = ' '
+                                    break
+                            except:
+                                print('Invalid input. Please try again.')
+                        is_marker = True 
+            if is_marker == False:
+                print('There is not marker in your board. Please choose a different action.')
+
+
+        # print board for overview
             
+                    
+
+
 def intro():
     print('Welcome to MINESWEEPER.')
 
@@ -244,7 +334,7 @@ def game(init_board, user_board):
                     break
             except:
                 print('Invalid input. Please try again.')
-                break
+                
             
         
         # check move
@@ -264,6 +354,8 @@ def game(init_board, user_board):
             print('You revealed spotted all the bombs. Congrates.')
             formated_board_list(init_board)
             break
+
+        marking_bombs()
 
 intro()
 # game loop 
